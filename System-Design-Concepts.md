@@ -1,0 +1,110 @@
+# System Design Concepts
+
+## 1. Scalability
+
+### Definition
+Scalability is the ability of a system to handle increasing traffic (users, requests, data) without breaking by adding resources (horizontal or vertical scaling).
+
+### Key Principles
+
+a. **System-wide Property**: Scalability is the property of the entire system. The system is as scalable as its least scalable part.
+
+b. **End-to-End Consideration**: A backend server can scale to handle 10x traffic, but the database must also be scalable to support the increased connection requests.
+
+c. **Measurable Capacity**: Scalability should ideally be expressed as measurable capacity + how that capacity changes when resources increase.
+
+### Scalability Metrics Example
+
+| Metric | 1× load | 10× load |
+|--------|---------|----------|
+| Traffic | 10K RPS | 100K RPS |
+| App servers | 5 | 50 |
+| p99 latency | 150 ms | 180 ms |
+| Error rate | 0.05% | 0.08% |
+| DB CPU | 55% | 65% |
+| DB capacity | 15K RPS | 120K RPS |
+
+---
+
+## 2. Load Balancer
+
+### Overview
+A load balancer distributes incoming requests across multiple servers.
+
+### Key Functions
+
+a. **Request Distribution**: Distributes incoming requests across multiple servers.
+
+b. **Health Checks**: Performs health checks on backend servers.
+
+c. **Horizontal Scaling**: Supports horizontal scaling by enabling addition of more servers.
+
+### Load Balancer Types
+
+#### L4 (Layer 4) - TCP/UDP Level
+- Routes based on network information
+- L4 sees: Source IP, Destination IP, Source Port, Destination Port, TCP/UDP
+
+#### L7 (Layer 7) - HTTP Level
+- Routing decision based on HTTP method, headers, paths, host, and cookies
+
+### Load Balancer Algorithms
+
+1. **Round Robin**: Distributes requests sequentially across servers
+2. **Least Connections**: Sends request to server with fewest active connections
+3. **IP Hash**: Uses client IP address to determine target server
+4. **Consistent Hashing**: Maintains cache coherence when servers are added/removed
+
+### Load Balancer Capacity
+
+| Metric | Capacity |
+|--------|----------|
+| Requests/sec | 1 million RPS |
+| New connections/sec | 100K/sec |
+| Concurrent connections | 5 million |
+| Throughput | 20 Gbps |
+| TLS handshakes/sec | 50K/sec |
+| P99 Latency | < 20 ms |
+
+---
+
+## 3. Rate Limiting Architecture
+
+### Two-Layer Rate Limiting Approach
+
+#### a. Edge Protection (at Load Balancer)
+- DDoS protection
+- Abusive IPs
+- Traffic floods
+- Obviously malicious traffic
+
+#### b. API/Business Rate Limiting (at API Gateway)
+Protects API based on:
+- User
+- API keys
+- Tenant
+- Endpoints
+- Subscription tier
+- Business rules
+
+---
+
+## System Architecture Diagram
+
+```mermaid
+flowchart TD
+    Internet[INTERNET] --> Edge[DDoS / WAF / Edge]
+    Edge --> LoadBalancer[LOAD BALANCER]
+    
+    subgraph Backend[Backend]
+        LoadBalancer --> App1[App1]
+        LoadBalancer --> App2[App2]
+        LoadBalancer --> App3[App3]
+        
+        App1 --> Database
+        App2 --> Database
+        App3 --> Database
+    end
+    
+    Database[Database]
+```
