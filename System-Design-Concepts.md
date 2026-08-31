@@ -68,9 +68,9 @@ c. **Horizontal Scaling**: Supports horizontal scaling by enabling addition of m
 
 ---
 
-## 3. Rate Limiting Architecture
+### Rate Limiting Architecture
 
-### Two-Layer Rate Limiting Approach
+Load balancers often implement a two-layer rate limiting approach:
 
 #### a. Edge Protection (at Load Balancer)
 - DDoS protection
@@ -87,9 +87,7 @@ Protects API based on:
 - Subscription tier
 - Business rules
 
----
-
-## System Architecture Diagram
+### System Architecture Diagram
 
 ```mermaid
 flowchart TD
