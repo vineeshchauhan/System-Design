@@ -175,9 +175,27 @@ d. **Reasons for high p99 latency (e.g., 500ms):**
 
 ```mermaid
 flowchart TD
-    LATENCY --> Network --> Distance --> TCP_TLS --> Network_hops
-    LATENCY --> Compute --> CPU_DB --> Redis --> Code
-    LATENCY --> Waiting --> Queues_locks --> Thread_pools --> Connection_pools
+    LATENCY --> Network
+    LATENCY --> Compute
+    LATENCY --> Waiting
+
+    subgraph Network
+        Distance
+        TCP_TLS
+        Network_hops
+    end
+
+    subgraph Compute
+        CPU_DB
+        Redis
+        Code
+    end
+
+    subgraph Waiting
+        Queues_locks
+        Thread_pools
+        Connection_pools
+    end
 ```
 
 ---
