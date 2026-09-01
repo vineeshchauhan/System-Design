@@ -173,16 +173,11 @@ d. **Reasons for high p99 latency (e.g., 500ms):**
 
 ### Latency Diagram
 
-```
-                    LATENCY
-                       │
-       ┌───────────────┼────────────────┐
-       ▼               ▼                ▼
-    Network          Compute          Waiting
-       │               │                │
-    Distance        CPU/DB          Queues/locks
-    TCP/TLS         Redis           Thread pools
-    Network hops    Code            Connection pools
+```mermaid
+flowchart TD
+    LATENCY --> Network --> Distance --> TCP_TLS --> Network_hops
+    LATENCY --> Compute --> CPU_DB --> Redis --> Code
+    LATENCY --> Waiting --> Queues_locks --> Thread_pools --> Connection_pools
 ```
 
 ---
