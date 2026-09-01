@@ -1,0 +1,15 @@
+# Cline File Editing Rules
+
+When editing files in this repository:
+
+1. **NEVER rewrite entire files** - This corrupts content and makes changes hard to track
+
+2. **USE insert_line to append content** - When adding new content, use the editor's insert_line parameter to add it at the end of the file
+
+3. **For small edits** - Use exact text replacement with old_text and new_text
+
+4. **Always verify changes** - Run `git diff filename.md` after editing to confirm only expected content changed
+
+5. **If file gets corrupted** - Run `git checkout filename.md` to restore
+
+This is a system design repository - maintain clean, trackable changes.
