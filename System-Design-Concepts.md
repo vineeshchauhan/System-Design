@@ -1,4 +1,4 @@
-# System Design Concepts
+﻿# System Design Concepts
 
 ## 1. Scalability
 
@@ -105,4 +105,85 @@ flowchart TD
     end
     
     Database[Database]
+
+---
+
+## 3. Latency
+
+### Definition
+Latency is the time between sending a request and receiving a response. Latency is measured in percentiles.
+
+### Percentile-based Measurement
+
+- **p50** = 50th percentile (median)
+- **p95** = 95th percentile
+- **p99** = 99th percentile
+
+#### Example
 ```
+p50 = 50 ms
+p95 = 120 ms
+p99 = 300 ms
+```
+
+**Interpretation**: 1% of requests are taking more than 300 ms.
+
+#### When to use Average vs Percentiles?
+- **Average latency** can hide tail latency. Use average to understand overall behavior.
+- **Percentiles** help understand user experience and tail latency.
+
+### Latency Components
+
+Latency is composed of multiple components:
+
+| Component | Description |
+|-----------|-------------|
+| Network Latency | Time for data to travel across the network |
+| LB Processing | Load balancer processing time |
+| Application Processing | Server application logic execution |
+| Redis Latency | Cache lookup/update time |
+| Database Latency | Database query execution |
+
+#### Example Breakdown
+```
+Network        30 ms
+LB              5 ms
+Application    20 ms
+Redis           2 ms
+DB             50 ms
+-------------------
+Total         107 ms
+```
+
+### Key Questions to Consider
+
+a. Can my server process the required traffic while keeping p95/p99 latency within our SLO?
+
+b. Every network hop adds latency.
+
+c. **How to reduce latency:**
+   - Keep the server/DB near to the user
+   - Use caching
+
+d. **Reasons for high p99 latency (e.g., 500ms):**
+   - User far from server (network latency)
+   - High traffic - CPU/threads/connections become saturated
+   - Background processing - CPU contention, thread contention or GC pause
+   - DB background tasks - DB contentions, locks, I/O, connection pool exhaustion, slow queries
+   - Downstream service latency
+
+### Latency Diagram
+
+```
+                    LATENCY
+                       │
+       ┌───────────────┼────────────────┐
+       ▼               ▼                ▼
+    Network          Compute          Waiting
+       │               │                │
+    Distance        CPU/DB          Queues/locks
+    TCP/TLS         Redis           Thread pools
+    Network hops    Code            Connection pools
+```
+
+---
