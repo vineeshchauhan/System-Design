@@ -105,8 +105,7 @@ flowchart TD
     end
     
     Database[Database]
-
----
+```
 
 ## 3. Latency
 
