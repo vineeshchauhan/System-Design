@@ -199,3 +199,102 @@ flowchart TD
 ```
 
 ---
+
+## 4. Throughput
+
+### Definition
+
+**Throughput** = How much work a system can process per unit of time.
+
+### Real-World Throughput Examples
+
+| Component | Throughput |
+|-----------|------------|
+| API | 10,000 requests/sec (RPS) |
+| Database | 50,000 queries/sec |
+| Kafka | 100MB/sec |
+| File Processing | 1,000 files/minute |
+
+### Throughput vs Latency
+
+```
+Latency = How long one request takes.
+Throughput = How many requests you can process per second.
+```
+
+**Key Distinction:**
+- **Latency** measures the duration of a single request
+- **Throughput** measures the volume of requests processed over time
+
+### Throughput Depends on Resources
+
+Throughput is constrained by multiple factors:
+
+- **CPU** - Processing power for request handling
+- **Memory** - Available RAM for concurrent operations
+- **Network** - Bandwidth and connection limits
+- **Disk I/O** - Storage read/write performance
+- **Database** - Query execution capacity
+- **Connections** - Concurrent connection limits
+- **Thread pools** - Worker thread availability
+- **Queues** - Buffer capacity for pending work
+- **Downstream services** - Dependencies' capacity
+
+**Overall throughput is often constrained by the slowest/most capacity-limited component** (bottleneck).
+
+### Throughput and Concurrency
+
+**Amdahl's Law relationship:**
+```
+Concurrency ≈ Throughput × Latency
+```
+
+**Example:**
+```
+Throughput = 1,000 requests/sec
+Latency    = 200 ms = 0.2 sec
+
+Concurrency ≈ 1,000 × 0.2
+            = 200 requests
+```
+
+This means you need approximately 200 concurrent requests to achieve 1,000 RPS with 200ms latency.
+
+### Throughput has a Workload Dimension
+
+**Example: 10K RPS system requirements:**
+- 10K GET requests/sec
+- 50K DB queries/sec (each request triggers 5 DB queries)
+- 20K Redis operations/sec (caching layer)
+- 10K downstream calls/sec (external service integrations)
+
+**Interview Tip:** When asked to design a system for 10K RPS, always ask: *"What does each request involve?"* The actual database, cache, and external service requirements may be 5-10x the API RPS.
+
+### SLI, SLO, and SLA
+
+| Term | Definition | Example |
+|------|------------|---------|
+| **SLI** (Service Level Indicator) | What we measure | p99 latency, error rate, throughput |
+| **SLO** (Service Level Objective) | What target we want | p99 latency < 200ms, 99.99% availability |
+| **SLA** (Service Level Agreement) | What we promise the customer | 99.9% uptime with credits for breaches |
+
+**Example with your metrics:**
+```
+API Support:
+- Throughput: 10K RPS
+- p99 Latency: < 200ms
+- Availability: 99.99%
+```
+
+### Throughput Optimization Strategies
+
+1. **Identify bottlenecks** - Use monitoring to find the limiting component
+2. **Scale horizontally** - Add more servers for stateless components
+3. **Use caching** - Reduce database load with Redis/Memcached
+4. **Connection pooling** - Reuse database connections
+5. **Async processing** - Offload work with message queues (Kafka, RabbitMQ)
+6. **Batch processing** - Process multiple items together
+7. **Read replicas** - Distribute read load from primary database
+8. **CDN** - Serve static content from edge locations
+
+---
