@@ -259,6 +259,7 @@ Concurrency ≈ 1,000 × 0.2
 ```
 
 This means you need approximately 200 concurrent requests to achieve 1,000 RPS with 200ms latency.
+So concurrency answers "how many are in progress?", while throughput answers "how many finish per second?".
 
 ### Throughput has a Workload Dimension
 
@@ -298,3 +299,111 @@ API Support:
 8. **CDN** - Serve static content from edge locations
 
 ---
+
+## 4. CDN
+
+### Definition
+
+**CDN (Content Delivery Network)** = A network of globally distributed **edge servers** that cache and serve content closer to users, reducing latency and origin-server load.
+
+Commonly cached content:
+- Images
+- Videos/video segments
+- CSS/JavaScript
+- Static HTML
+- Files/downloads
+- Cacheable API responses
+
+### System Design Use Cases
+
+| System | CDN Usage |
+|---|---|
+| **YouTube / Netflix** | Videos, video segments, thumbnails |
+| **Instagram** | Photos, videos, reels, profile images |
+| **Facebook / X** | Images, videos, static assets |
+| **Amazon / E-commerce** | Product images, CSS, JS, static pages |
+| **News Websites** | Articles, images, other cacheable content |
+
+### How does CDN select an Edge Server?
+
+CDNs commonly use **DNS-based routing and/or Anycast**.
+
+- **DNS Routing** → DNS directs the client toward a suitable CDN PoP based on location, availability, network conditions, etc.
+- **Anycast** → Multiple CDN PoPs advertise the same IP. Internet routing (BGP) routes the request toward a suitable/nearby PoP.
+
+```text
+User
+  ↓
+DNS / Anycast
+  ↓
+Nearby/Suitable CDN PoP
+```
+
+### What happens on a Cache Miss?
+
+If the requested content is not available (or is stale) at the edge:
+
+```text
+User
+  ↓
+CDN Edge
+  ↓ Cache Miss
+Origin / Regional Cache
+  ↓
+CDN caches response
+  ↓
+User
+```
+
+Subsequent requests can be served directly from the CDN (**cache hit**).
+
+### TTL (Time To Live)
+
+**TTL** defines how long cached content can be considered fresh.
+
+Example:
+
+```text
+TTL = 1 hour
+```
+
+After expiry, the CDN may fetch/revalidate the content from the origin.
+
+- **Long TTL** → Better cache hit ratio and lower origin load, but higher risk of stale content.
+- **Short TTL** → Fresher content, but more origin requests.
+
+### How is Data Distributed to Edge Servers?
+
+Two common approaches:
+
+#### Pull CDN
+
+Content is fetched **on demand**.
+
+```text
+User → CDN → Cache Miss → Origin
+                         ↓
+                    CDN caches it
+```
+
+Best when content popularity is unpredictable.
+
+#### Push / Pre-positioning
+
+Content is proactively distributed to selected edge locations **before users request it**.
+
+```text
+Origin
+  ├──→ India Edge
+  ├──→ Europe Edge
+  └──→ US Edge
+```
+
+Useful for predictable/popular content, such as a major video release.
+
+### Key Interview Topics
+
+**Cache Hit/Miss → TTL → Cache Invalidation → Cache Stampede → Origin Protection**
+
+- **Cache Invalidation** → Remove/update stale cached content before TTL expires.
+- **Cache Stampede** → Many requests hit the origin simultaneously after cache
