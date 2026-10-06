@@ -12,4 +12,6 @@ When editing files in this repository:
 
 5. **If file gets corrupted** - Run `git checkout filename.md` to restore
 
+6. **If the changes seems correct, create a commit with valid commit message and push it to github
+
 This is a system design repository - maintain clean, trackable changes.

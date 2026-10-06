@@ -407,3 +407,77 @@ Useful for predictable/popular content, such as a major video release.
 
 - **Cache Invalidation** → Remove/update stale cached content before TTL expires.
 - **Cache Stampede** → Many requests hit the origin simultaneously after cache
+
+---
+
+## 4. DNS
+
+### Definition
+**DNS (Domain Name System)** is a distributed directory service that translates human-readable domain names (like www.example.com) into IP addresses that computers can understand.
+
+DNS can be used for traffic routing, directing users to different servers based on their geographic location or the health of the servers.
+
+### DNS Lookup Flow
+The DNS resolution process follows this path:
+1. Browser/OS cache
+2. Recursive DNS resolver
+3. Root DNS server
+4. TLD (.com) server
+5. Authoritative DNS server
+6. IP address returned to client
+
+### Key Concepts
+
+#### Recursive vs Authoritative DNS
+- **Recursive DNS Resolver**: Finds and caches DNS answers for clients
+- **Authoritative DNS Server**: Holds the actual DNS records for a domain
+
+#### DNS Records
+Common DNS record types include:
+- **A**: Maps a domain name to an IPv4 address
+- **AAAA**: Maps a domain name to an IPv6 address
+- **CNAME**: Creates an alias from one domain name to another
+- **MX**: Specifies mail servers for a domain
+- **TXT**: Stores arbitrary text data for verification and other purposes
+- **NS**: Specifies authoritative name servers for a domain
+
+#### TTL (Time To Live)
+TTL determines how long DNS resolvers may cache a DNS response:
+- **Longer TTL**: Reduces DNS traffic but makes changes propagate more slowly
+- **Shorter TTL**: Allows faster propagation of changes but increases DNS traffic
+
+### DNS Caching
+DNS caching occurs at multiple levels:
+- Browser cache
+- Operating system cache
+- Recursive resolver cache
+
+This multi-level caching reduces lookup latency and decreases load on DNS infrastructure.
+
+### DNS-based Load Balancing
+DNS can provide basic load balancing by returning different IP addresses for the same hostname, enabling traffic distribution across multiple servers.
+
+### Complete Web Request Flow
+After typing www.example.com into a browser, the request follows this path:
+
+```text
+URL
+ ↓
+DNS
+ ↓
+TCP/QUIC => Reliable byte delivery with packet loss handling, ordering, retransmission, and flow control
+ ↓
+TLS => Secure communication with encryption, authentication, and integrity verification
+ ↓
+CDN / Load Balancer
+ ↓
+Application
+ ↓
+DB / Cache / Services
+ ↓
+HTTP Response
+ ↓
+Browser Rendering
+```
+
+This represents the classic HTTPS flow: HTTP + TLS, typically over TCP for HTTP/1.1 and HTTP/2.
