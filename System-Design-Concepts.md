@@ -1,4 +1,4 @@
-﻿# System Design Concepts
+# System Design Concepts
 
 ## 1. Scalability
 
@@ -15,7 +15,7 @@ c. **Measurable Capacity**: Scalability should ideally be expressed as measurabl
 
 ### Scalability Metrics Example
 
-| Metric | 1× load | 10× load |
+| Metric | 1� load | 10� load |
 |--------|---------|----------|
 | Traffic | 10K RPS | 100K RPS |
 | App servers | 5 | 50 |
@@ -246,7 +246,7 @@ Throughput is constrained by multiple factors:
 
 **Amdahl's Law relationship:**
 ```
-Concurrency ≈ Throughput × Latency
+Concurrency � Throughput � Latency
 ```
 
 **Example:**
@@ -254,7 +254,7 @@ Concurrency ≈ Throughput × Latency
 Throughput = 1,000 requests/sec
 Latency    = 200 ms = 0.2 sec
 
-Concurrency ≈ 1,000 × 0.2
+Concurrency � 1,000 � 0.2
             = 200 requests
 ```
 
@@ -328,14 +328,14 @@ Commonly cached content:
 
 CDNs commonly use **DNS-based routing and/or Anycast**.
 
-- **DNS Routing** → DNS directs the client toward a suitable CDN PoP based on location, availability, network conditions, etc.
-- **Anycast** → Multiple CDN PoPs advertise the same IP. Internet routing (BGP) routes the request toward a suitable/nearby PoP.
+- **DNS Routing** ? DNS directs the client toward a suitable CDN PoP based on location, availability, network conditions, etc.
+- **Anycast** ? Multiple CDN PoPs advertise the same IP. Internet routing (BGP) routes the request toward a suitable/nearby PoP.
 
 ```text
 User
-  ↓
+  ?
 DNS / Anycast
-  ↓
+  ?
 Nearby/Suitable CDN PoP
 ```
 
@@ -345,13 +345,13 @@ If the requested content is not available (or is stale) at the edge:
 
 ```text
 User
-  ↓
+  ?
 CDN Edge
-  ↓ Cache Miss
+  ? Cache Miss
 Origin / Regional Cache
-  ↓
+  ?
 CDN caches response
-  ↓
+  ?
 User
 ```
 
@@ -369,8 +369,8 @@ TTL = 1 hour
 
 After expiry, the CDN may fetch/revalidate the content from the origin.
 
-- **Long TTL** → Better cache hit ratio and lower origin load, but higher risk of stale content.
-- **Short TTL** → Fresher content, but more origin requests.
+- **Long TTL** ? Better cache hit ratio and lower origin load, but higher risk of stale content.
+- **Short TTL** ? Fresher content, but more origin requests.
 
 ### How is Data Distributed to Edge Servers?
 
@@ -381,8 +381,8 @@ Two common approaches:
 Content is fetched **on demand**.
 
 ```text
-User → CDN → Cache Miss → Origin
-                         ↓
+User ? CDN ? Cache Miss ? Origin
+                         ?
                     CDN caches it
 ```
 
@@ -394,25 +394,26 @@ Content is proactively distributed to selected edge locations **before users req
 
 ```text
 Origin
-  ├──→ India Edge
-  ├──→ Europe Edge
-  └──→ US Edge
+  +--? India Edge
+  +--? Europe Edge
+  +--? US Edge
 ```
 
 Useful for predictable/popular content, such as a major video release.
 
 ### Key Interview Topics
 
-**Cache Hit/Miss → TTL → Cache Invalidation → Cache Stampede → Origin Protection**
+**Cache Hit/Miss ? TTL ? Cache Invalidation ? Cache Stampede ? Origin Protection**
 
-- **Cache Invalidation** → Remove/update stale cached content before TTL expires.
-- **Cache Stampede** → Many requests hit the origin simultaneously after cache
+- **Cache Invalidation** ? Remove/update stale cached content before TTL expires.
+- **Cache Stampede** ? Many requests hit the origin simultaneously after cache
 
 ---
 
 ## 4. DNS
 
 ### Definition
+
 **DNS (Domain Name System)** is a distributed directory service that translates human-readable domain names (like www.example.com) into IP addresses that computers can understand.
 
 DNS can be used for traffic routing, directing users to different servers based on their geographic location or the health of the servers.
@@ -462,22 +463,91 @@ After typing www.example.com into a browser, the request follows this path:
 
 ```text
 URL
- ↓
+ ?
 DNS
- ↓
+ ?
 TCP/QUIC => Reliable byte delivery with packet loss handling, ordering, retransmission, and flow control
- ↓
+ ?
 TLS => Secure communication with encryption, authentication, and integrity verification
- ↓
+ ?
 CDN / Load Balancer
- ↓
+ ?
 Application
- ↓
+ ?
 DB / Cache / Services
- ↓
+ ?
 HTTP Response
- ↓
+ ?
 Browser Rendering
 ```
 
 This represents the classic HTTPS flow: HTTP + TLS, typically over TCP for HTTP/1.1 and HTTP/2.
+
+
+## 5. API Gateway
+
+### Note about frontend applications
+Frontend applications built in Angular are downloaded in browser. After loading, the Angular JavaScript executes on the user's machine and calls backend APIs. When we package Angular app with NGINX, it can be deployed to k8s as a service. But still, the NGINX is simply serving the frontend files; the actual Angular application executes in the browser. Angular is typically the client/frontend application. It may be independently deployed and containerized, but I wouldn't call it a backend microservice.
+
+When we execute  ng serve in local, it starts a development server at port 4200. http://localhost:4200 The purpose of this server is just to serve the Angular files during development, handle rebuilds/hot reload, etc.
+
+In Production, ng build produced static files like index.html, main.js, styles.css, assets/. These files are served to the browser and Angular application executes in browser. Thus, all the backend APIs are called from the browser
+
+### Definition
+API gateway is server-side software/service that acts as an entry point to backend APIs. It handles cross-cutting API concerns like Rate Limiting, Authentication, Authorization polices, Routing, Request transformation, Logging / Metrics Quotas etc.
+
+### Single Entry Point
+An API gateway provides clients with a unified entry point to backend APIs.
+
+### Request Routing
+It routes requests to the appropriate service.
+
+`	ext
+/users/*    ? User Service
+/orders/*   ? Order Service
+/payments/* ? Payment Service
+`
+
+### TLS Termination
+The gateway can terminate HTTPS/TLS. Communication from gateway to backend may then use TLS again, depending on security requirements.
+
+### Observability
+It is a useful centralized place for API access logs, request metrics, latency/error monitoring, tracing headers, and auditing.
+
+### Availability
+Must scale and be highly available � Since it sits on the critical request path, it can become a bottleneck/SPOF if poorly designed. Gateways are typically deployed as multiple stateless instances or provided as a managed distributed service.
+
+## 6. Forward and Reverse Proxy
+
+### Definition - Forward Proxy
+Forward proxy represents the client. It hides the client. The destination server sees the proxy rather than directly communicating with the original client.
+
+Typical use cases:
+- Corporate internet access control
+- Blocking websites
+- Monitoring/filtering outbound traffic
+- Hiding client IP
+- Egress control
+
+### Forward Proxy Example
+`	ext
+Employee Laptop
+ ?
+Forward Proxy
+ ?
+Internet
+ ?
+Server
+`
+
+### Definition - Reverse Proxy
+Reverse proxy represents the server/backend. A reverse proxy sits in front of servers. The client doesn't need to know which backend server actually handles the request.
+
+Typical use cases:
+- Load balancing
+- TLS termination
+- Routing
+- Caching
+- Compression
+- Security/WAF integration
+- Hiding backend servers
